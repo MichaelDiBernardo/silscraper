@@ -18,23 +18,21 @@
 # TODO: The regexps are really sloppy and still grabbing random giant globs of
 # character dumps in some cases. Tighten that up.
 
-import glob
-import optparse
 import os
-import re
-import requests
 import sys
-import uuid
 
-from bs4 import BeautifulSoup
 
 #-------------------------------------------------------------------------------
 # SCRAPING
 #-------------------------------------------------------------------------------
-DUMP_EXT = "dmp"
+from bs4 import BeautifulSoup
+import requests
+import uuid
 
+DUMP_EXT = "dmp"
 OOOK_ROOT = "http://angband.oook.cz/"
 LADDER_URL = OOOK_ROOT + "ladder-browse.php"
+
 
 def puts(string):
     """
@@ -43,6 +41,7 @@ def puts(string):
     """
     sys.stdout.write(string)
     sys.stdout.flush()
+
 
 def get_dump_links_from_index(index_html):
     """
@@ -54,6 +53,7 @@ def get_dump_links_from_index(index_html):
     links = [OOOK_ROOT + link.get('href') for link in links if "ladder-show" in
              link.get('href')]
     return links
+
 
 def download_dumps(dump_links, config):
     """
@@ -116,9 +116,13 @@ def scrape_dumps(config):
     print "\nDone! ({0} pages fetched.)".format(o)
     download_dumps(dump_links, config)
 
+
 #-------------------------------------------------------------------------------
 # PARSING
 #-------------------------------------------------------------------------------
+import glob
+import re
+
 CSV, SQLITE3 = ('csv', 'sqlite3')
 STATS = (
     'Melee',
@@ -134,6 +138,7 @@ STATS = (
     'Con',
     'Gra'
 )
+
 
 def get_regexp_map():
     """
@@ -192,6 +197,7 @@ def get_regexp_map():
 # Just create this once, since we're calling parse_dump a gazillion times.
 REGEXP_MAP = get_regexp_map()
 
+
 def parse_dump(dump, filename):
     """
     Given the text of the dump from 'filename', this will create a map of stat
@@ -202,7 +208,7 @@ def parse_dump(dump, filename):
     specifically computed here (e.g. how many sils were found, if V was killed,
     etc.)
     """
-    fields = { 'Filename': os.path.basename(filename) }
+    fields = {'Filename': os.path.basename(filename)}
 
     for (field, processor) in REGEXP_MAP.items():
         if isinstance(processor, tuple):
@@ -242,6 +248,7 @@ def parse_dump(dump, filename):
 
     return fields
 
+
 def parse_dumps(config):
     """
     Parses all dumps in config.dumpdir and returns a list of maps, where each
@@ -257,6 +264,7 @@ def parse_dumps(config):
         parsed_dumps.append(fields)
 
     return parsed_dumps
+
 
 #-------------------------------------------------------------------------------
 # EXPORT
@@ -274,7 +282,7 @@ class Exporter(object):
         """
         if not records:
             print "No records to export! Did you scrape (-s) to {0}?".format(
-                    config.dumpdir)
+                config.dumpdir)
             return
 
         sample = records[0]
@@ -326,20 +334,24 @@ class SqliteExporter(Exporter):
 
     def _export_one(self, record):
         insert_stmt = "INSERT INTO silchars VALUES ({0})".format(
-                ",".join("?" * len(record)))
+            ",".join("?" * len(record)))
         self.c.execute(insert_stmt, record)
 
     def _end_export(self):
         self.conn.commit()
         self.conn.close()
 
+
 #-------------------------------------------------------------------------------
 # MAIN PROGRAM
 #-------------------------------------------------------------------------------
+import optparse
+
 DESC = """Gathers statistics from Sil character dumps that are optionally downloaded /
 scraped from angband.oook.cz's main ladder (i.e. non-competition dumps.)"""
 
 USAGE = "%prog [options] dump_directory output_filename"
+
 
 def parse_args():
     p = optparse.OptionParser(usage=USAGE, description=DESC)
@@ -383,6 +395,7 @@ def parse_args():
     opts.output_file = output_file
 
     return opts
+
 
 def main():
     config = parse_args()
