@@ -1,4 +1,4 @@
 silscraper
 ==========
 
-Scrapes Sil character dumps from angband.oook.cz ladder.
+Scrapes Sil character dumps from http://angband.oook.cz ladder.

@@ -33,3 +33,6 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# WTF github gives "mr developer" common ignores but not VIM? Logical.
+*.swp
